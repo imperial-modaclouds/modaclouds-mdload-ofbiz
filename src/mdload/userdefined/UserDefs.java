@@ -7,6 +7,7 @@ import java.util.Properties;
 
 public class UserDefs {
 public final static Properties properties = new Properties();
+public static int MAX_ITEM_QUANTITY = 7;
 public static String BASE_IP;
 public static int BASE_PORT = 8080;
 public static String BASE_URL;
