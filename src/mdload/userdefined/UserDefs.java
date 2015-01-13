@@ -13,7 +13,8 @@ public static int BASE_PORT = 8080;
 public static String BASE_URL;
 public static String LQN_FILE;
 public static String LQN_SERVER;
-public static int LQN_PORT = 3;
+public static int LQN_PORT = 3; 
+public static String BACKEND_LIST;
 
 public static long RANDOM_SEED = 0L;
 public static double MAX_SESSION_LENGTH = 50;
@@ -26,6 +27,7 @@ static {
 
 	try {
 		logger.info("loading from file: " + file);
+		System.out.println("loading from file: " + file);
 		InputStream stream = UserDefs.class.getResourceAsStream(file);
 		if (stream == null) throw new Exception("config file not found");
 
@@ -36,6 +38,7 @@ static {
 		for (int i = 0; i < fields.length; i++) {
 			String type = fields[i].getType().getName();
 			String field = fields[i].getName();
+			
 			String value = properties.getProperty(fields[i].getName());
 
 			logger.debug("encountered property type '" + type + "' with value: "
@@ -56,6 +59,7 @@ static {
 
 			logger.debug(fields[i].getName() + " set to " + value);
 		}
+		
 	} catch (Exception e) {
 		logger.warn("failed to fetch properties: " + e.getMessage()
 				  + ", using default values");

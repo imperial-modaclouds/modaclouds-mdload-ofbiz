@@ -27,6 +27,8 @@ public class UserLoginDetails {
 		setPostCode("postcode" + id);
 		setEmail("email" + id + "@domain.com");
 		setUsername("user-" + id);
+		//long t0 = System.currentTimeMillis();
+		//setUsername("user-" + t0);
 		setPassword("pwd-" + id);
 		setPasswordHint("this is my password hint");
 	}

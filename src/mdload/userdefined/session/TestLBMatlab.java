@@ -7,18 +7,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
-import mdload.client.workload.EndAtomic;
-import mdload.client.workload.EndSession;
-import mdload.client.workload.Request;
-import mdload.client.workload.Session;
-import mdload.client.workload.StartSession;
 import mdload.userdefined.UserDefs;
 import mdload.userdefined.UserLoginDetails;
 import mdload.userdefined.request.*;
+import mdload.client.workload.*;
 
-
-public class TestMatlab extends Session {
+public class TestLBMatlab extends Session {
 
 	private UserLoginDetails user;
 	
@@ -32,15 +28,10 @@ public class TestMatlab extends Session {
     boolean connected;
     final int numAttempts = 3;
     final int timeout = 60000;
-    
-    //LQN model file path
-    //String LQNpath = "/data/line_test/ofbiz_prob.xml";
-    //String LQNpath = "/data/line_test/ofbizBranch.xml";
-    //String LQNpath = "D://line_test//ofbizBranch.xml";
-    String LQNpath = UserDefs.LQN_FILE;
+    	
+	String LQNpath = UserDefs.LQN_FILE;
 
-    
-    public TestMatlab(long userid) {
+	public TestLBMatlab(long userid) {
 		super(userid);
 		this.setUser(new UserLoginDetails(getUserID()));
 		
@@ -77,18 +68,35 @@ public class TestMatlab extends Session {
                 System.exit(1);
             }*/
         }
-        
-        
-		
 	}
 
 	@Override
 	public LinkedList<Request> getWarmup() {
+		System.out.println("getWarmUp");
 		LinkedList<Request> session = new LinkedList<Request>();
 		session.add( new StartSession());
-		session.add( new Home() );
-		session.add( new Register() );
-		session.add( new RegisterDetails(user) );
+		String[] backEndList = UserDefs.BACKEND_LIST.split(";");
+		// create a permutation of the backend indexes 
+		int n = backEndList.length;
+		System.out.println("back end list size: "+n);
+		ArrayList<Integer> indexList = new ArrayList<Integer>();
+		for(int i = 0; i < n; i++){
+			indexList.add(i, new Integer(i));
+		}
+		java.util.Collections.shuffle(indexList);
+		
+		// register on every backend
+		for(int i = 0; i < n; i++){
+			session.add( new HomeBackEnd(backEndList[indexList.get(i)]) );
+			session.add( new Register() );
+			System.out.println(user.getUsername());
+			System.out.println(user.getPassword());
+			System.out.println("Registering on backend " + backEndList[indexList.get(i)] );
+			session.add( new RegisterDetails(user) );
+			session.add( new Logout() );
+
+		}
+		session.add( new EndSession());
 		return session;
 	}
 
@@ -115,7 +123,7 @@ public class TestMatlab extends Session {
 	        		//System.out.println((i+1)+": "+parts[i]);
 	        		session.add(injectNewRequest(parts[i]));
 	        	}
-	        		        	
+	        	session.add(new EndSession());	        	
 	        	//close connection
 	        	command = "CLOSE";
 		        System.out.println("Command: "+command); 
@@ -273,7 +281,8 @@ public class TestMatlab extends Session {
 	    return req;
 	}
 	
-    private  boolean connect(){
+	
+	private  boolean connect(){
 		lineSocket = null;
 	    out = null;
 	    in = null;
@@ -325,9 +334,4 @@ public class TestMatlab extends Session {
         }
         return connected;
     }
-    
-
-
-
-	
 }
